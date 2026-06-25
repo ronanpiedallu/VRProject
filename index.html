@@ -1,28 +1,272 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>AR HUD OS</title>
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>AR HUD OS V5</title>
+
+<meta name="theme-color" content="#111111">
+
+<meta
+name="apple-mobile-web-app-capable"
+content="yes">
+
+<meta
+name="mobile-web-app-capable"
+content="yes">
+
+<meta
+name="apple-mobile-web-app-status-bar-style"
+content="black-translucent">
+
+<link rel="manifest" href="manifest.json">
 
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-<video id="camera" autoplay playsinline muted></video>
+<!-- ========================= -->
+<!-- CAMERA -->
+<!-- ========================= -->
 
-<div id="hud"></div>
+<video
+    id="camera"
+    autoplay
+    playsinline
+    muted>
+</video>
 
-<button id="addButton">+</button>
+<!-- ========================= -->
+<!-- OVERLAY -->
+<!-- ========================= -->
 
-<div id="menu" class="hidden">
-    <button data-type="clock">Horloge</button>
-    <button data-type="notes">Notes</button>
+<div id="overlay">
+
+    <!-- Barre supérieure -->
+
+    <div id="topBar">
+
+        <div class="topTitle">
+            AR HUD OS
+        </div>
+
+        <div class="topActions">
+
+            <button
+                id="fullscreenBtn"
+                class="glassButton">
+
+                ⛶
+
+            </button>
+
+            <button
+                id="glassesBtn"
+                class="glassButton">
+
+                👓
+
+            </button>
+
+            <button
+                id="saveBtn"
+                class="glassButton">
+
+                💾
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Zone des fenêtres -->
+
+    <div id="desktop"></div>
+
+    <!-- Dock -->
+
+    <div id="dock">
+
+        <button
+            class="dockButton"
+            data-app="clock">
+
+            🕒
+
+        </button>
+
+        <button
+            class="dockButton"
+            data-app="notes">
+
+            📝
+
+        </button>
+
+        <button
+            class="dockButton"
+            data-app="web">
+
+            🌐
+
+        </button>
+
+        <button
+            class="dockButton"
+            data-app="html">
+
+            📄
+
+        </button>
+
+    </div>
+
 </div>
 
+<!-- ========================= -->
+<!-- MENU URL -->
+<!-- ========================= -->
+
+<div
+    id="urlDialog"
+    class="dialog hidden">
+
+    <div class="dialogContent">
+
+        <h2>
+            Ouvrir un site
+        </h2>
+
+        <input
+            id="urlInput"
+            type="text"
+            placeholder="https://...">
+
+        <div class="dialogButtons">
+
+            <button
+                id="openUrlBtn">
+
+                Ouvrir
+
+            </button>
+
+            <button
+                id="cancelUrlBtn">
+
+                Annuler
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- MODE LUNETTES -->
+<!-- ========================= -->
+
+<div
+    id="glassesOverlay"
+    class="hidden">
+
+    <div class="eye leftEye"></div>
+
+    <div class="eye rightEye"></div>
+
+</div>
+
+<!-- ========================= -->
+<!-- TEMPLATE FENETRE -->
+<!-- ========================= -->
+
+<template id="windowTemplate">
+
+    <div class="window">
+
+        <div class="titlebar">
+
+            <span class="windowTitle">
+
+                Fenêtre
+
+            </span>
+
+            <div class="windowControls">
+
+                <button class="minBtn">
+                    —
+                </button>
+
+                <button class="maxBtn">
+                    □
+                </button>
+
+                <button class="closeBtn">
+                    ✕
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="content"></div>
+
+        <div class="resizeHandle"></div>
+
+    </div>
+
+</template>
+
+<!-- ========================= -->
+<!-- LOADING -->
+<!-- ========================= -->
+
+<div id="loadingScreen">
+
+    <div id="loadingCard">
+
+        <h1>
+            AR HUD OS
+        </h1>
+
+        <p>
+            Initialisation...
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- SCRIPT -->
+<!-- ========================= -->
+
 <script src="script.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+
+    window.addEventListener('load', () => {
+
+        navigator.serviceWorker
+        .register('./service-worker.js')
+        .catch(console.error);
+
+    });
+
+}
+</script>
 
 </body>
 </html>
