@@ -1,59 +1,42 @@
 import * as THREE from "three";
 
-/////////////////////////////////////////////////
-// CAMERA
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
+// CAMERA VIDEO
+//////////////////////////////////////////////////
 
-const video =
-document.getElementById("camera");
+const video = document.getElementById("camera");
 
 navigator.mediaDevices.getUserMedia({
-
-    video:{
-        facingMode:{
-            ideal:"environment"
-        },
-
-        width:{ideal:1920},
-        height:{ideal:1080},
-
-        frameRate:{ideal:60}
+    video: {
+        facingMode: {
+            ideal: "environment"
+        }
     },
-
-    audio:false
-
-}).then(stream=>{
-
-    video.srcObject=stream;
-
-}).catch(err=>{
-
-    alert(
-        "Erreur caméra : " +
-        err.message
-    );
-
+    audio: false
+})
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(err => {
+    alert(err.message);
 });
 
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
 // THREE.JS
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
 
-const scene =
-new THREE.Scene();
+const scene = new THREE.Scene();
 
-const camera =
-new THREE.PerspectiveCamera(
+const camera = new THREE.PerspectiveCamera(
     70,
-    window.innerWidth/window.innerHeight,
+    window.innerWidth / window.innerHeight,
     0.01,
-    1000
+    100
 );
 
-const renderer =
-new THREE.WebGLRenderer({
-    alpha:true,
-    antialias:true
+const renderer = new THREE.WebGLRenderer({
+    alpha: true,
+    antialias: true
 });
 
 renderer.setSize(
@@ -62,143 +45,200 @@ renderer.setSize(
 );
 
 document
-.getElementById("container")
-.appendChild(renderer.domElement);
+    .getElementById("container")
+    .appendChild(renderer.domElement);
 
-/////////////////////////////////////////////////
-// FENÊTRE FLOTTANTE
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
+// PIVOT TÊTE
+//////////////////////////////////////////////////
 
-const texture =
-new THREE.TextureLoader().load(
+const head = new THREE.Group();
+scene.add(head);
+
+//////////////////////////////////////////////////
+// FENÊTRE AR
+//////////////////////////////////////////////////
+
+const texture = new THREE.TextureLoader().load(
     "assets/image.png"
 );
 
-const geometry =
-new THREE.PlaneGeometry(
-    2,
-    1.2
+const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 1.2),
+    new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true
+    })
 );
 
-const material =
-new THREE.MeshBasicMaterial({
+plane.position.set(0, 0, -5);
 
-    map:texture,
-    transparent:true
+scene.add(plane);
 
-});
+//////////////////////////////////////////////////
+// ORIENTATION
+//////////////////////////////////////////////////
 
-const windowPlane =
-new THREE.Mesh(
-    geometry,
-    material
+let referenceQuaternion = null;
+
+const currentQuaternion =
+    new THREE.Quaternion();
+
+const correctionQuaternion =
+    new THREE.Quaternion();
+
+correctionQuaternion.setFromEuler(
+    new THREE.Euler(
+        -Math.PI / 2,
+        0,
+        0,
+        "YXZ"
+    )
 );
 
-/////////////////////////////////////////////////
-// POSITION FIXE DANS LE MONDE
-/////////////////////////////////////////////////
+function handleOrientation(event) {
 
-windowPlane.position.set(
-    0,
-    0,
-    -5
-);
+    const alpha =
+        THREE.MathUtils.degToRad(
+            event.alpha || 0
+        );
 
-scene.add(windowPlane);
+    const beta =
+        THREE.MathUtils.degToRad(
+            event.beta || 0
+        );
 
-/////////////////////////////////////////////////
-// GYROSCOPE
-/////////////////////////////////////////////////
+    const gamma =
+        THREE.MathUtils.degToRad(
+            event.gamma || 0
+        );
 
-let alpha=0;
-let beta=0;
-let gamma=0;
+    const euler =
+        new THREE.Euler(
+            beta,
+            alpha,
+            -gamma,
+            "YXZ"
+        );
 
-function requestOrientation(){
+    currentQuaternion
+        .setFromEuler(euler);
 
-    if(
-      typeof DeviceOrientationEvent
-      !== "undefined"
-      &&
-      typeof DeviceOrientationEvent
-      .requestPermission === "function"
-    ){
+    currentQuaternion.multiply(
+        correctionQuaternion
+    );
 
-        DeviceOrientationEvent
-        .requestPermission()
-        .then(response=>{
+    if (!referenceQuaternion) {
 
-            if(response==="granted"){
+        referenceQuaternion =
+            currentQuaternion.clone();
 
-                startGyro();
-
-            }
-
-        });
-
+        return;
     }
-    else{
 
-        startGyro();
+    const relative =
+        referenceQuaternion
+            .clone()
+            .invert()
+            .multiply(
+                currentQuaternion
+            );
 
-    }
-}
-
-function startGyro(){
-
-    window.addEventListener(
-
-        "deviceorientation",
-
-        e=>{
-
-            alpha=e.alpha || 0;
-            beta=e.beta || 0;
-            gamma=e.gamma || 0;
-
-        },
-
-        true
-
+    head.quaternion.copy(
+        relative
     );
 }
 
+//////////////////////////////////////////////////
+// ACTIVATION CAPTEURS
+//////////////////////////////////////////////////
+
+async function enableSensors() {
+
+    try {
+
+        if (
+            typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function"
+        ) {
+
+            const permission =
+                await DeviceOrientationEvent.requestPermission();
+
+            if (permission !== "granted") {
+                return;
+            }
+        }
+
+        window.addEventListener(
+            "deviceorientation",
+            handleOrientation,
+            true
+        );
+
+    } catch (e) {
+
+        console.error(e);
+
+    }
+}
+
 document.body.addEventListener(
-
     "click",
-
-    requestOrientation,
-
-    {once:true}
-
+    enableSensors,
+    { once: true }
 );
 
-/////////////////////////////////////////////////
-// ANIMATION
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
+// RECENTRAGE
+//////////////////////////////////////////////////
 
-function animate(){
+function recenter() {
+
+    referenceQuaternion =
+        currentQuaternion.clone();
+
+}
+
+let lastTap = 0;
+
+document.addEventListener(
+    "touchend",
+    () => {
+
+        const now = Date.now();
+
+        if (
+            now - lastTap < 300
+        ) {
+            recenter();
+        }
+
+        lastTap = now;
+    }
+);
+
+//////////////////////////////////////////////////
+// ANIMATION
+//////////////////////////////////////////////////
+
+function animate() {
 
     requestAnimationFrame(
         animate
     );
 
-    camera.rotation.order="YXZ";
+    camera.position.set(
+        0,
+        0,
+        0
+    );
 
-    camera.rotation.y=
-        THREE.MathUtils.degToRad(
-            -alpha
-        );
-
-    camera.rotation.x=
-        THREE.MathUtils.degToRad(
-            beta-90
-        )*0.3;
-
-    camera.rotation.z=
-        THREE.MathUtils.degToRad(
-            gamma
-        )*0.1;
+    camera.lookAt(
+        0,
+        0,
+        -1
+    );
 
     renderer.render(
         scene,
@@ -208,23 +248,23 @@ function animate(){
 
 animate();
 
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
 // RESIZE
-/////////////////////////////////////////////////
+//////////////////////////////////////////////////
 
 window.addEventListener(
-"resize",
-()=>{
+    "resize",
+    () => {
 
-    camera.aspect=
-        window.innerWidth/
-        window.innerHeight;
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
 
-    camera.updateProjectionMatrix();
+        camera.updateProjectionMatrix();
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-
-});
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+);
