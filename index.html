@@ -1,29 +1,40 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Glasses V1</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>AR Glasses V2.1</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script async
+src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js">
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three":
+    "https://unpkg.com/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
 </head>
+
 <body>
 
-    <video id="camera" autoplay playsinline muted></video>
+<video
+    id="camera"
+    autoplay
+    muted
+    playsinline>
+</video>
 
-    <div id="window">
-        <h2>Fenêtre AR</h2>
+<div id="container"></div>
 
-        <img id="arImage" src="media/image.png" alt="Image AR">
-
-        <!-- Décommente pour utiliser une vidéo -->
-        <!--
-        <video id="arVideo" autoplay loop muted>
-            <source src="media/video.mp4" type="video/mp4">
-        </video>
-        -->
-    </div>
-
-    <script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>
