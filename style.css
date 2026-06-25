@@ -1,58 +1,28 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-body {
-    overflow: hidden;
-    background: black;
-    font-family: Arial, sans-serif;
+body{
+    overflow:hidden;
+    background:black;
 }
 
-#camera {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: 0;
+#camera{
+    position:fixed;
+    inset:0;
+
+    width:100vw;
+    height:100vh;
+
+    object-fit:cover;
+
+    z-index:0;
 }
 
-#window {
-    position: fixed;
-
-    top: 50%;
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
-    width: 600px;
-    max-width: 80vw;
-
-    backdrop-filter: blur(20px);
-
-    background: rgba(30,30,30,0.35);
-
-    border: 1px solid rgba(255,255,255,0.2);
-
-    border-radius: 25px;
-
-    padding: 20px;
-
-    color: white;
-
-    z-index: 10;
-
-    box-shadow:
-        0 0 40px rgba(255,255,255,0.1);
-}
-
-#window h2 {
-    margin-bottom: 15px;
-}
-
-#arImage,
-#arVideo {
-    width: 100%;
-    border-radius: 15px;
+#container{
+    position:fixed;
+    inset:0;
+    z-index:10;
 }
