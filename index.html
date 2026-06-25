@@ -1,69 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0">
-
-<title>AR OS</title>
+<title>AR HUD OS</title>
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<video
-id="camera"
-autoplay
-playsinline
-muted>
-</video>
+<video id="camera" autoplay playsinline muted></video>
 
-<div id="ar-layer">
+<div id="hud"></div>
 
-    <div class="window" id="clock">
-        <div class="title">Horloge</div>
-        <div id="clockText"></div>
-    </div>
+<button id="addButton">+</button>
 
-    <div class="window" id="notes">
-        <div class="title">Notes</div>
-
-        <textarea>
-
-Bienvenue dans AR OS
-
-        </textarea>
-
-    </div>
-
-    <div class="window" id="videoWindow">
-
-        <div class="title">
-            Vidéo
-        </div>
-
-        <video
-        autoplay
-        loop
-        muted>
-
-            <source
-            src="assets/demo.mp4">
-
-        </video>
-
-    </div>
-
+<div id="menu" class="hidden">
+    <button data-type="clock">Horloge</button>
+    <button data-type="notes">Notes</button>
 </div>
 
 <script src="script.js"></script>
 
 </body>
-
 </html>
